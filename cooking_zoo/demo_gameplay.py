@@ -29,4 +29,3 @@ while not all(terminations.values()) or all(truncations.values()):
     action = {"player_0": manual_policy("player_0")}
     observations, rewards, terminations, truncations, infos = env.step(action)
     env.render()
-
