@@ -46,7 +46,7 @@ class BaseAgent:
     def distance(point1, point2):
         return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
 
-    def find_node(self):
+    def find_node(self): # find the subgoal node in the recipe graph and return it. 
         for node in reversed(self.recipe_graph.node_list):
             if not node.marked:
                 return node
@@ -145,7 +145,7 @@ class BaseAgent:
             ToasterFoodStates.TOASTED: "Toaster",
             PotFoodStates.COOKED: "Pot"
         }
-        appliance_name = sequence_dict.get(condition[1])
+        appliance_name = sequence_dict.get(condition[1]) # condition[0] is the name, condition[1] is the pythonic object
 
         if appliance_name:
             return self.generic_sequence(appliance_name, world_obj, observation)
@@ -154,11 +154,11 @@ class BaseAgent:
 
     def generic_sequence(self, appliance_name, obj, observation):
         for appliance in observation[appliance_name]:
-            if not self.reachable(self.location, appliance.location, observation):
+            if not self.reachable(self.location, appliance.location, observation): # cannot reachable means cannot interact
                 continue
-            if obj in appliance.content:
+            if obj in appliance.content: # if the object is already in the appliance, then just walk to the appliance
                 return self.walk_to_location(obj.location, observation)
-        if obj is self.agent.holding:
+        if obj is self.agent.holding: # if the object is the agent's holding object, then we need to walk to the appliance
             appliance_locations = [appliance.location for appliance in observation[appliance_name]
                                    if self.reachable(self.location, appliance.location, observation)
                                    and not appliance.content]
@@ -170,10 +170,10 @@ class BaseAgent:
                                if self.reachable(self.location, counter.location, observation)]
                 closest_counter_location = self.closest(obj.location, counter_obj, observation)
                 return self.walk_to_location(closest_counter_location, observation)
-        else:
+        else: # if not holding the object, then we need to walk to the appliance
             appliance_locations = [appliance.location for appliance in observation[appliance_name]
                                    if self.reachable(self.location, appliance.location, observation)
-                                   and not appliance.content]
+                                   and not appliance.content] # only apply when appliance is empty
             if appliance_locations:
                 if self.agent.holding:
                     counter_obj = [counter.location for counter in observation["Counter"]
@@ -182,9 +182,9 @@ class BaseAgent:
                     closest_counter_location = self.closest(self.location, counter_obj, observation)
                     return self.walk_to_location(closest_counter_location, observation)
                 else:
-                    return self.walk_to_location(obj.location, observation)
+                    return self.walk_to_location(obj.location, observation) # this means you need to get the object first before using the appliance
             else:
-                appliance_locations = [appliance.location for appliance in observation[appliance_name]
+                appliance_locations = [appliance.location for appliance in observation[appliance_name] # somehow redo again, and it means that the appliance is not empty and then walking towards it means we pick up the object
                                        if self.reachable(self.location, appliance.location, observation)]
                 closest_appliance_location = self.closest(self.location, appliance_locations, observation)
                 return self.walk_to_location(closest_appliance_location, observation)

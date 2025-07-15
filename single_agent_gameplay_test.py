@@ -64,3 +64,5 @@ if __name__ == "__main__":
         print(f"Terminations: {terminations}, Rewards: {rewards}")
         print(f"Step: {env.unwrapped.zoo_env.unwrapped.t}")
         time.sleep(0.1)
+        
+    print("Game Over")

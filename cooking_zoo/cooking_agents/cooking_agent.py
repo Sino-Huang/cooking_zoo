@@ -24,12 +24,13 @@ class CookingAgent(BaseAgent):
         return contains_based_action
 
     def compute_contains_action(self, node, observation):
+        """It means you want to achieve the action of putting some objects (e.g., Carrots) into some container (e.g., Plate)"""
         # check if contained node is already on plate
         node_obj, contains_obj = self.compute_closest_node_in_contains_to_get(node, observation)
         if not contains_obj:
             return 0
-        if contains_obj.location == self.location:
-            return self.walk_to_location(node_obj.location, observation)
+        if contains_obj.location == self.location: # this means the agent carry the object (same location)
+            return self.walk_to_location(node_obj.location, observation) # given you carry the object, you can walk to the node location (e.g., Plate's location)
         else:
             return self.walk_to_location(contains_obj.location, observation)
 
@@ -45,11 +46,11 @@ class CookingAgent(BaseAgent):
             num_conditions = self.check_node_conditions(node, obj)
             dist = self.distance(self.location, obj.location)
             world_objects.append((obj, num_conditions, dist))
-        best_world_object = sorted(world_objects, key=lambda x: (x[1], x[2]))[0][0]
+        best_world_object = sorted(world_objects, key=lambda x: (x[1], x[2]))[0][0] # this try to get the object that has no incomplete conditions and is closest to the agent
         if best_world_object:
             for condition in node.conditions:
                 if getattr(best_world_object, condition[0]) != condition[1]:
-                    return self.handle_condition_sequence(best_world_object, observation, condition)
+                    return self.handle_condition_sequence(best_world_object, observation, condition) # an example is to handle banana object to have the condition chopped.
         return 0
 
     def get_best_contains_obj(self, node, observation, node_world_object):
