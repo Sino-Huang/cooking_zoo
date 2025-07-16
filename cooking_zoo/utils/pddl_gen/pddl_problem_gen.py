@@ -54,7 +54,9 @@ def generate_overcooked_pddl(level: Dict,
         "direction"   : [],
         "location"    : [],
         "agent"       : [],
-        "workstation" : [],
+        "cutboard"    : [],
+        "blender"     : [],
+        "switch"      : [],
         "delivery"    : [],
         "block"       : [],
         "counter"     : [],      # plain counter (wall) tiles
@@ -86,9 +88,9 @@ def generate_overcooked_pddl(level: Dict,
 
     # mapping from JSON symbol to our PDDL type bucket
     STATIC_KIND = {
-        "Cutboard"      : "workstation",
-        "Blender"       : "workstation",
-        "Switch"        : "workstation",
+        "Cutboard"      : "cutboard",
+        "Blender"       : "blender",
+        "Switch"        : "switch",
         "Deliversquare" : "delivery",
         "Block"         : "block"
     }
@@ -103,6 +105,19 @@ def generate_overcooked_pddl(level: Dict,
             objs_by_type[STATIC_KIND[name]].append(inst)
             station_at[inst] = (x, y)
 
+    # for each cutboard, set (chopped-food-count cutboard num0) as init 
+    # (i.e. no food chopped yet)
+    # TODO need to confirm this is correct
+    for cutboard in objs_by_type["cutboard"]:
+        objs_by_type["block"].append(f"(chopped-food-count {cutboard} num0)")
+    # for each blender, set (smashed-food-count blender num0) as init
+    for blender in objs_by_type["blender"]:
+        objs_by_type["block"].append(f"(smashed-food-count {blender} num0)")
+    # for each switch, set (is-switch location) as init
+    for switch in objs_by_type["switch"]:
+        objs_by_type["block"].append(f"(is-switch {switch})")
+        objs_by_type["block"].append(f"switch-on {switch}")  
+    
     # ---------------------------------------------------------------- dynamic items
     ITEM_TYPES = {"Plate", "Lettuce", "Tomato", "Banana", "Apple",
                   "Watermelon", "Bread", "Carrot"}
@@ -124,6 +139,25 @@ def generate_overcooked_pddl(level: Dict,
             objs_by_type["item"].append(inst)
             item_at[inst] = (x, y)
 
+    # Also assign 'has-type object object-type' facts for each item
+    type_type_dict = {
+        'lettuce': 'lettuce-type',
+        'tomato': 'tomato-type',
+        'banana': 'banana-type',
+        'apple': 'apple-type',
+        'watermelon': 'watermelon-type',
+        'bread': 'bread-type',
+        'carrot': 'carrot-type',
+        'plate': 'plate-type'
+    }
+    
+    for item, (x, y) in item_at.items():
+        item_type = item.split('-')[0]
+        if item_type in type_type_dict:
+            objs_by_type["item"].append(f"has-type {item} {type_type_dict[item_type]}")
+
+    
+    
     # ---------------------------------------------------------------- agents
     agent_at : dict[str, Tuple[int,int]] = {}
     for obj_desc in level["AGENTS"]:
@@ -144,6 +178,19 @@ def generate_overcooked_pddl(level: Dict,
     # ---------------------------------------------------------------- :init
     init_lines : list[str] = []
 
+    static_inits_str = """(quantity-after-chop onion-type num1)
+(quantity-after-chop tomato-type num1)
+(quantity-after-chop lettuce-type num1)
+(quantity-after-chop cucumber-type num1)
+(quantity-after-chop apple-type num1)
+(quantity-after-chop watermelon-type num1)
+(quantity-after-chop bread-type num2)
+(quantity-after-chop carrot-type num1)
+(quantity-after-chop banana-type num1)
+"""
+    static_init_splits = static_inits_str.splitlines()
+    init_lines.extend(static_init_splits)
+    
     # positions of counters and floors ----------------------------------------
     #   (occupied? clear? passable?)  – simplest approach:
     for (x, y) in floors:
@@ -165,14 +212,11 @@ def generate_overcooked_pddl(level: Dict,
     for inst, (x, y) in agent_at.items():
         init_lines.append(f"(at {inst} {loc_name(x, y)})")
 
-    # four primitive moves ----------------------------------------------------
-    init_lines.extend(["(move dir-up)", "(move dir-down)",
-                       "(move dir-left)", "(move dir-right)"])
 
     # directional adjacency facts --------------------------------------------
     DIRS = {"dir-left":(-1,0), "dir-right":(1,0),
             "dir-up":(0,-1),   "dir-down":(0,1)}
-    passable = floors          # agents can stand on floor (and delivery etc.)
+    passable = list(floors) + list(walls)         # agents can stand on floor (and delivery etc.)
     for (x, y) in passable:
         for d_name, (dx, dy) in DIRS.items():
             nx, ny = x+dx, y+dy
