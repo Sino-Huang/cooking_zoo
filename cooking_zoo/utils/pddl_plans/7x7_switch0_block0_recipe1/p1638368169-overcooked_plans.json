@@ -1,0 +1,43 @@
+{
+  "map_id": 1638368169,
+  "map_width": 7,
+  "map_height": 7,
+  "num_switch": 0,
+  "num_blocks": 0,
+  "num_recipes": 1,
+  "recipes_tasks": [
+    "mashed-carrot-banana-food"
+  ],
+  "plans": [
+    [
+      "move agent-01 pos-5-3 pos-5-2 dir-up (1)",
+      "move agent-01 pos-5-2 pos-5-1 dir-up (1)",
+      "pick-up agent-01 carrot-01 pos-5-1 pos-6-1 dir-right (1)",
+      "move agent-01 pos-5-1 pos-5-2 dir-down (1)",
+      "move agent-01 pos-5-2 pos-5-3 dir-down (1)",
+      "move agent-01 pos-5-3 pos-4-3 dir-left (1)",
+      "put-down agent-01 carrot-01 pos-4-3 pos-4-4 dir-down (1)",
+      "smash agent-01 carrot-01 pos-4-3 pos-4-4 blender-01 dir-down (1)",
+      "collect-smashed agent-01 blender-01 carrot-01 pos-4-3 pos-4-4 num1 num0 dir-down (1)",
+      "move agent-01 pos-4-3 pos-5-3 dir-right (1)",
+      "move agent-01 pos-5-3 pos-5-2 dir-up (1)",
+      "put-on-plate agent-01 carrot-01 pos-5-2 pos-6-2 plate-02 dir-right (1)",
+      "pick-up agent-01 plate-02 pos-5-2 pos-6-2 dir-right (1)",
+      "move agent-01 pos-5-2 pos-5-3 dir-down (1)",
+      "put-down agent-01 plate-02 pos-5-3 pos-6-3 dir-right (1)",
+      "move agent-01 pos-5-3 pos-5-2 dir-up (1)",
+      "move agent-01 pos-5-2 pos-5-1 dir-up (1)",
+      "pick-up agent-01 banana-01 pos-5-1 pos-5-0 dir-up (1)",
+      "move agent-01 pos-5-1 pos-5-2 dir-down (1)",
+      "move agent-01 pos-5-2 pos-5-3 dir-down (1)",
+      "move agent-01 pos-5-3 pos-4-3 dir-left (1)",
+      "put-down agent-01 banana-01 pos-4-3 pos-4-4 dir-down (1)",
+      "smash agent-01 banana-01 pos-4-3 pos-4-4 blender-01 dir-down (1)",
+      "collect-smashed agent-01 blender-01 banana-01 pos-4-3 pos-4-4 num1 num0 dir-down (1)",
+      "move agent-01 pos-4-3 pos-5-3 dir-right (1)",
+      "put-on-plate agent-01 banana-01 pos-5-3 pos-6-3 plate-02 dir-right (1)",
+      "pick-up agent-01 plate-02 pos-5-3 pos-6-3 dir-right (1)",
+      "serve-food agent-01 plate-02 mashed-carrot-banana-food pos-5-3 pos-5-4 dir-down (1)"
+    ]
+  ]
+}

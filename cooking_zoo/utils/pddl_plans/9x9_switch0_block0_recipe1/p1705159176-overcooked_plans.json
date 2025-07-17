@@ -1,0 +1,47 @@
+{
+  "map_id": 1705159176,
+  "map_width": 9,
+  "map_height": 9,
+  "num_switch": 0,
+  "num_blocks": 0,
+  "num_recipes": 1,
+  "recipes_tasks": [
+    "tomato-salad-food"
+  ],
+  "plans": [
+    [
+      "move agent-01 pos-6-3 pos-6-4 dir-down (1)",
+      "move agent-01 pos-6-4 pos-5-4 dir-left (1)",
+      "move agent-01 pos-5-4 pos-5-5 dir-down (1)",
+      "move agent-01 pos-5-5 pos-4-5 dir-left (1)",
+      "move agent-01 pos-4-5 pos-4-6 dir-down (1)",
+      "move agent-01 pos-4-6 pos-4-7 dir-down (1)",
+      "move agent-01 pos-4-7 pos-3-7 dir-left (1)",
+      "move agent-01 pos-3-7 pos-2-7 dir-left (1)",
+      "move agent-01 pos-2-7 pos-1-7 dir-left (1)",
+      "move agent-01 pos-1-7 pos-1-6 dir-up (1)",
+      "move agent-01 pos-1-6 pos-1-5 dir-up (1)",
+      "move agent-01 pos-1-5 pos-1-4 dir-up (1)",
+      "pick-up agent-01 tomato-02 pos-1-4 pos-0-4 dir-left (1)",
+      "move agent-01 pos-1-4 pos-1-5 dir-down (1)",
+      "move agent-01 pos-1-5 pos-1-6 dir-down (1)",
+      "put-down agent-01 tomato-02 pos-1-6 pos-0-6 dir-left (1)",
+      "chop agent-01 tomato-02 pos-1-6 pos-0-6 cutboard-01 tomato-type num1 dir-left (1)",
+      "move agent-01 pos-1-6 pos-1-5 dir-up (1)",
+      "move agent-01 pos-1-5 pos-2-5 dir-right (1)",
+      "move agent-01 pos-2-5 pos-2-4 dir-up (1)",
+      "pick-up agent-01 plate-03 pos-2-4 pos-3-4 dir-right (1)",
+      "move agent-01 pos-2-4 pos-2-5 dir-down (1)",
+      "move agent-01 pos-2-5 pos-1-5 dir-left (1)",
+      "move agent-01 pos-1-5 pos-1-6 dir-down (1)",
+      "move agent-01 pos-1-6 pos-1-7 dir-down (1)",
+      "put-down agent-01 plate-03 pos-1-7 pos-1-8 dir-down (1)",
+      "move agent-01 pos-1-7 pos-1-6 dir-up (1)",
+      "collect-chopped agent-01 cutboard-01 tomato-02 pos-1-6 pos-0-6 num1 num0 dir-left (1)",
+      "move agent-01 pos-1-6 pos-1-7 dir-down (1)",
+      "put-on-plate agent-01 tomato-02 pos-1-7 pos-1-8 plate-03 dir-down (1)",
+      "pick-up agent-01 plate-03 pos-1-7 pos-1-8 dir-down (1)",
+      "serve-food agent-01 plate-03 tomato-salad-food pos-1-7 pos-0-7 dir-left (1)"
+    ]
+  ]
+}

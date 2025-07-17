@@ -1,0 +1,52 @@
+{
+  "map_id": 1277496207,
+  "map_width": 9,
+  "map_height": 9,
+  "num_switch": 2,
+  "num_blocks": 2,
+  "num_recipes": 1,
+  "recipes_tasks": [
+    "tomato-salad-food"
+  ],
+  "plans": [
+    [
+      "move agent-01 pos-3-7 pos-4-7 dir-right (1)",
+      "move-to-switch-off agent-01 pos-4-7 pos-5-7 dir-right (1)",
+      "move agent-01 pos-5-7 pos-4-7 dir-left (1)",
+      "move agent-01 pos-4-7 pos-3-7 dir-left (1)",
+      "move-to-switch-off agent-01 pos-3-7 pos-2-7 dir-left (1)",
+      "move agent-01 pos-2-7 pos-1-7 dir-left (1)",
+      "move-to-switch-on agent-01 pos-1-7 pos-2-7 dir-right (1)",
+      "move agent-01 pos-2-7 pos-3-7 dir-right (1)",
+      "move agent-01 pos-3-7 pos-3-6 dir-up (1)",
+      "move agent-01 pos-3-6 pos-3-5 dir-up (1)",
+      "move agent-01 pos-3-5 pos-3-4 dir-up (1)",
+      "move agent-01 pos-3-4 pos-3-3 dir-up (1)",
+      "move agent-01 pos-3-3 pos-3-2 dir-up (1)",
+      "pick-up agent-01 tomato-01 pos-3-2 pos-4-2 dir-right (1)",
+      "move agent-01 pos-3-2 pos-3-3 dir-down (1)",
+      "move agent-01 pos-3-3 pos-3-4 dir-down (1)",
+      "move agent-01 pos-3-4 pos-3-5 dir-down (1)",
+      "move agent-01 pos-3-5 pos-4-5 dir-right (1)",
+      "move agent-01 pos-4-5 pos-4-6 dir-down (1)",
+      "move agent-01 pos-4-6 pos-4-7 dir-down (1)",
+      "move-to-switch-on agent-01 pos-4-7 pos-5-7 dir-right (1)",
+      "put-down agent-01 tomato-01 pos-5-7 pos-5-8 dir-down (1)",
+      "chop agent-01 tomato-01 pos-5-7 pos-5-8 cutboard-01 tomato-type num1 dir-down (1)",
+      "move agent-01 pos-5-7 pos-4-7 dir-left (1)",
+      "move-to-switch-off agent-01 pos-4-7 pos-5-7 dir-right (1)",
+      "move agent-01 pos-5-7 pos-5-6 dir-up (1)",
+      "pick-up agent-01 plate-02 pos-5-6 pos-6-6 dir-right (1)",
+      "move-to-switch-on agent-01 pos-5-6 pos-5-7 dir-down (1)",
+      "put-down agent-01 plate-02 pos-5-7 pos-6-7 dir-right (1)",
+      "collect-chopped agent-01 cutboard-01 tomato-01 pos-5-7 pos-5-8 num1 num0 dir-down (1)",
+      "put-on-plate agent-01 tomato-01 pos-5-7 pos-6-7 plate-02 dir-right (1)",
+      "pick-up agent-01 plate-02 pos-5-7 pos-6-7 dir-right (1)",
+      "move agent-01 pos-5-7 pos-4-7 dir-left (1)",
+      "move agent-01 pos-4-7 pos-3-7 dir-left (1)",
+      "move-to-switch-off agent-01 pos-3-7 pos-2-7 dir-left (1)",
+      "move agent-01 pos-2-7 pos-1-7 dir-left (1)",
+      "serve-food agent-01 plate-02 tomato-salad-food pos-1-7 pos-0-7 dir-left (1)"
+    ]
+  ]
+}

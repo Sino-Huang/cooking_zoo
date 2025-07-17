@@ -150,3 +150,12 @@ If you want to add to the default recipe book directly add the recipe in the fil
 
 
 
+## Generating Problem Instances 
+
+```python
+python cooking_zoo/utils/pddl_gen/gen_and_plan.py --width 7 --height 7 --num_switch 0 --num_blocks 0 --num_recipes 1 --num_output 50
+
+python cooking_zoo/utils/pddl_gen/gen_and_plan.py --width 7 --height 7 --num_switch 0 --num_blocks 0 --num_recipes 2 --num_output 10
+```
+
+The associated PDDL problems files and PDDL plans will be in `cooking_zoo/utils/pddl_problems` and `cooking_zoo/utils/pddl_plans` respectively.

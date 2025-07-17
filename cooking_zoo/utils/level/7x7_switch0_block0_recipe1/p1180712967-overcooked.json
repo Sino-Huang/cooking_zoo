@@ -1,0 +1,113 @@
+{
+  "LEVEL_LAYOUT": "-------\n-     -\n-   ---\n-   ---\n-  ----\n-------\n-------",
+  "STATIC_OBJECTS": [
+    {
+      "Cutboard": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          2        ]
+      }
+    },
+    {
+      "Blender": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          3        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          2        ],
+        "Y_POSITION": [          0        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          5        ],
+        "Y_POSITION": [          2        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          2        ]
+      }
+    }
+  ],
+  "DYNAMIC_OBJECTS": [
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [          5        ],
+        "Y_POSITION": [          0        ]
+      }
+    },
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [          3        ],
+        "Y_POSITION": [          0        ]
+      }
+    },
+    {
+      "Carrot": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          0        ]
+      }
+    },
+    {
+      "Carrot": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          4        ]
+      }
+    },
+    {
+      "Banana": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          3        ]
+      }
+    },
+    {
+      "Banana": {
+        "COUNT": 1,
+        "X_POSITION": [          1        ],
+        "Y_POSITION": [          0        ]
+      }
+    }
+  ],
+  "AGENTS": [
+    {
+      "MAX_COUNT": 1,
+      "X_POSITION": [        4      ],
+      "Y_POSITION": [        1      ]
+    }
+  ],
+  "DYNAMIC_EXCLUDED_POSITIONS": [
+    [      0,      0    ],
+    [      6,      0    ],
+    [      6,      2    ],
+    [      5,      3    ],
+    [      6,      3    ],
+    [      4,      4    ],
+    [      5,      4    ],
+    [      6,      4    ],
+    [      0,      5    ],
+    [      3,      5    ],
+    [      4,      5    ],
+    [      5,      5    ],
+    [      6,      5    ],
+    [      0,      6    ],
+    [      1,      6    ],
+    [      2,      6    ],
+    [      3,      6    ],
+    [      4,      6    ],
+    [      5,      6    ],
+    [      6,      6    ]
+  ]
+}
