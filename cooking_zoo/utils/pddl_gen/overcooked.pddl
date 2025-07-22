@@ -139,8 +139,6 @@
     )
 
     ;; ------------------------------------------------ Pick an item lying at the same tile
-    ; SUKAI TODO: cannot pick up items from plate
-    ; plate-02 and banana-03 has the problem
     (:action pick-up
         :parameters (?ag - agent ?it - pickable-object ?agloc ?itemloc - location ?dir - direction)
         :precondition (and
