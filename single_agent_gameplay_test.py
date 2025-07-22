@@ -61,7 +61,7 @@ DEBUG_NUM_OUTPUT = 5
 PROBLEM_CLAUSE = f"{DEBUG_WIDTH}x{DEBUG_HEIGHT}_switch{DEBUG_NUM_SWITCH}_block{DEBUG_NUM_BLOCKS}_recipe{DEBUG_NUM_RECIPES}"
 LEVEL_FOLDER = Path(__file__).parent / "cooking_zoo/utils/level"
 
-DEBUG_RESET_FLAG = True # Set to True to regenerate levels
+DEBUG_RESET_FLAG = False # Set to True to regenerate levels
 if DEBUG_RESET_FLAG:
     # rm the old level files
     level_files = glob(str(LEVEL_FOLDER / PROBLEM_CLAUSE) +  "/*.json")

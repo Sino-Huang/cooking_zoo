@@ -238,7 +238,7 @@ class FastDownward():
                 return action_id
         raise ValueError(f"Action string '{action_str}' does not match any known action.")
         
-    def __call__(self, domain_file, problem_file, horizon=np.inf, timeout=10,
+    def __call__(self, domain_file, problem_file, horizon=np.inf, timeout=30,
                  return_files=False, parse_actions=False):
 
         dom_file = tempfile.NamedTemporaryFile(delete=False).name

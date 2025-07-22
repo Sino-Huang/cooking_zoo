@@ -133,3 +133,10 @@ venv.bak/
 .mypy_cache/
 
 token.txt
+
+# PDDL dataset
+cooking_zoo/utils/level/
+
+cooking_zoo/utils/pddl_plans/
+
+cooking_zoo/utils/pddl_problems/

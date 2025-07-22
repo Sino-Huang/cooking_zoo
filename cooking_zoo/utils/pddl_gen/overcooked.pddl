@@ -139,6 +139,8 @@
     )
 
     ;; ------------------------------------------------ Pick an item lying at the same tile
+    ; SUKAI TODO: cannot pick up items from plate
+    ; plate-02 and banana-03 has the problem
     (:action pick-up
         :parameters (?ag - agent ?it - pickable-object ?agloc ?itemloc - location ?dir - direction)
         :precondition (and
@@ -195,6 +197,11 @@
             ;; should not submit the item to a deliver square, that is done by the serve-food action
             (forall (?sd - deliversquare)
                 (not (on ?sd ?targetloc))
+            )
+
+            ;; should not have a plate at the target location
+            (forall (?pl - plate)
+                (not (at ?pl ?targetloc))
             )
 
             ;; target location must not have any other pickable objects
@@ -344,6 +351,7 @@
             (handempty ?ag) ; agent is now handempty
             (on-plate ?it ?pl) ; ingredient is now on the plate
             (plate-ingredient-count ?pl ?next-num) ; plate now has next number of ingredients
+            (not (plate-ingredient-count ?pl ?cur-num)) ; IMPORTANT plate no longer has current number of ingredients
         )
     )
 
