@@ -249,8 +249,8 @@
             
         )
         :effect (and
-            (not (at ?ing ?targetloc)) ; ingredient is no longer at the target location
-            (cutboard-contain ?cb ?ing) ; cutboard now contains the ingredient
+            (not (at ?ing ?targetloc)) ; ingredient is no longer at the target location  
+            (cutboard-contain ?cb ?ing) ; cutboard now contains the ingredient 
             (get-chopped ?ing) ; ingredient is now chopped
             (chopped-food-count ?cb ?z) ; cutboard now has chopped food to the quantity of z
             (not (chopped-food-count ?cb num0)) ; cutboard is no longer empty
@@ -271,8 +271,8 @@
             (not (get-smashed ?ing)) ; ingredient is not smashed yet
         )
         :effect (and 
-            (not (at ?ing ?targetloc)) ; ingredient is no longer at the target location
-            (blender-contain ?bl ?ing) ; blender now contains the ingredient
+            (not (at ?ing ?targetloc)) ; ingredient is no longer at the target location 
+            (blender-contain ?bl ?ing) ; blender now contains the ingredient  
             (get-smashed ?ing) ; ingredient is now smashed
             (smashed-food-count ?bl num1) ; blender now has smashed food to the quantity of 1
             (not (smashed-food-count ?bl num0)) ; blender is no longer empty
@@ -291,16 +291,36 @@
             (chopped-food-count ?cb ?z) ; cutboard has chopped food to the quantity of z
             (succ ?precz ?z)
             (cutboard-contain ?cb ?ing) ; cutboard contains the ingredient
+            (not (= ?precz num0)) ; new quantity must be greater than 0
         )
         :effect (and 
             (not (chopped-food-count ?cb ?z)) ; cutboard no longer has chopped food to the quantity of z
             (chopped-food-count ?cb ?precz) ; cutboard now has chopped food to the quantity of precz
             (holding ?ag ?ing) ; agent is now holding the ingredient
             (not (handempty ?ag)) ; hand is not empty after collecting 
-            (when 
-            (chopped-food-count ?cb num0) ; if there is no chopped food left
-                (not (cutboard-contain ?cb ?ing)) ; cutboard no longer contains the ingredient
-            )
+        )
+    )
+
+    (:action collect-chopped-last
+        :parameters (?ag - agent ?cb - cutboard ?ing - ingredient ?agloc ?targetloc - location ?z - integer ?precz - integer ?dir - direction)
+        :precondition (and 
+            (at ?ag ?agloc)
+            (handempty ?ag)
+            (move-dir ?agloc ?targetloc ?dir) ; agent can reach the target location 
+            ; target location must a chopboard
+            (on ?cb ?targetloc)
+            (not (chopped-food-count ?cb num0)) ; cutboard has chopped food
+            (chopped-food-count ?cb ?z) ; cutboard has chopped food to the quantity of z
+            (succ ?precz ?z)
+            (cutboard-contain ?cb ?ing) ; cutboard contains the ingredient
+            (= ?precz num0) ; new quantity must be greater than 0
+        )
+        :effect (and 
+            (not (chopped-food-count ?cb ?z)) ; cutboard no longer has chopped food to the quantity of z
+            (chopped-food-count ?cb ?precz) ; cutboard now has chopped food to the quantity of precz
+            (holding ?ag ?ing) ; agent is now holding the ingredient
+            (not (handempty ?ag)) ; hand is not empty after collecting 
+            (not (cutboard-contain ?cb ?ing)) ; cutboard no longer contains the ingredient
         )
     )
 
@@ -315,17 +335,38 @@
             (not (smashed-food-count ?bl num0)) ; blender has smashed food
             (smashed-food-count ?bl ?z) ; blender has smashed food to the quantity of z
             (succ ?precz ?z) ;; successor relation for numbers
-            (blender-contain ?bl ?ing) ; blender contains the ingredient    
+            (blender-contain ?bl ?ing) ; blender contains the ingredient  
+            (not (= ?precz num0)) ; new quantity must be greater than 0  
         )
         :effect (and
             (not (smashed-food-count ?bl ?z)) ; blender no longer has smashed food to the quantity of z
             (smashed-food-count ?bl ?precz) ; blender now has smashed food to the quantity of precz
             (holding ?ag ?ing) ; agent is now holding the ingredient
             (not (handempty ?ag)) ; hand is not empty after collecting 
-            (when
-                (and (smashed-food-count ?bl num0))
-                (not (blender-contain ?bl ?ing)) ; blender no longer contains the ingredient
-            ) ; if there is no smashed food left and blender still contains the ingredient
+
+        )
+    )
+
+    (:action collect-smashed-last
+        :parameters (?ag - agent ?bl - blender ?ing - smash-ingredient ?agloc ?targetloc - location ?z ?precz - integer ?dir - direction)
+        :precondition (and
+            (at ?ag ?agloc)
+            (handempty ?ag)
+            (move-dir ?agloc ?targetloc ?dir) ; agent can reach the target location 
+            ; target location must a blender
+            (on ?bl ?targetloc)
+            (not (smashed-food-count ?bl num0)) ; blender has smashed food
+            (smashed-food-count ?bl ?z) ; blender has smashed food to the quantity of z
+            (succ ?precz ?z) ;; successor relation for numbers
+            (blender-contain ?bl ?ing) ; blender contains the ingredient  
+            (= ?precz num0) ; new quantity must be greater than 0  
+        )
+        :effect (and
+            (not (smashed-food-count ?bl ?z)) ; blender no longer has smashed food to the quantity of z
+            (smashed-food-count ?bl ?precz) ; blender now has smashed food to the quantity of precz
+            (holding ?ag ?ing) ; agent is now holding the ingredient
+            (not (handempty ?ag)) ; hand is not empty after collecting 
+            (not (blender-contain ?bl ?ing)) ; blender no longer contains the ingredient
         )
     )
 
@@ -475,8 +516,6 @@
             )
         )
     )
-
-    
 
     
 

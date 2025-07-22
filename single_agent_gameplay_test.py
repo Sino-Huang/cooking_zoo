@@ -62,6 +62,10 @@ PROBLEM_CLAUSE = f"{DEBUG_WIDTH}x{DEBUG_HEIGHT}_switch{DEBUG_NUM_SWITCH}_block{D
 LEVEL_FOLDER = Path(__file__).parent / "cooking_zoo/utils/level"
 
 DEBUG_RESET_FLAG = False # Set to True to regenerate levels
+# PROBLEM_ID = "p4072221419"
+PROBLEM_ID = None
+
+
 if DEBUG_RESET_FLAG:
     # rm the old level files
     level_files = glob(str(LEVEL_FOLDER / PROBLEM_CLAUSE) +  "/*.json")
@@ -90,7 +94,11 @@ if __name__ == "__main__":
     # randomly select a level file
     if not level_files:
         raise ValueError(f"No level files found in {LEVEL_FOLDER / PROBLEM_CLAUSE}")
-    level_file = Path(random.choice(level_files))
+    if not (PROBLEM_ID == "" or PROBLEM_ID is None):
+        level_file = Path(os.path.join(LEVEL_FOLDER, PROBLEM_CLAUSE, f"{PROBLEM_ID}-overcooked.json")) 
+    else:
+        level_file = Path(random.choice(level_files))
+        
     level = f"{level_file.parent.name}/{level_file.stem}"
     
     # get the associated PDDL plan file
