@@ -140,3 +140,9 @@ cooking_zoo/utils/level/
 cooking_zoo/utils/pddl_plans/
 
 cooking_zoo/utils/pddl_problems/
+
+cooking_zoo/utils/level_*/
+
+cooking_zoo/utils/pddl_plans_*/
+
+cooking_zoo/utils/pddl_problems_*/

@@ -142,35 +142,64 @@ class KSTAR():
 class FastDownward():
     """FastDownward planner. (multiple plans)
     """
-    def __init__(self, quality_bound=0.9, number_of_plans_bound=10, search_heuristic="astar(lmcut())"):
+    def __init__(self,fast_downward_path =None, quality_bound=0.9, number_of_plans_bound=10):
         super().__init__()
+        if fast_downward_path is not None:
+            self.fast_downward_path = fast_downward_path
+        else:
+            self.fast_downward_path = os.path.join(os.path.dirname(__file__), "fast-downward.py")
         self.quality_bound = quality_bound
         self.number_of_plans_bound = number_of_plans_bound
-        self.search_heuristic = search_heuristic
         self._statistics = {}
  
+    def get_statistics(self):
+        """Get statistics of the planner.
+        """
+        return self._statistics
             
     def plan_from_pddl(self, dom_file, prob_file, horizon=np.inf, timeout=10,
-                       remove_files=False):
+                       remove_files=False, optimal=False):
         """PDDL-specific planning method.
         """
         start_time = time.time()
         
-        fast_downward_path = os.path.join(os.path.dirname(__file__), "fast-downward.py")
+        fast_downward_path = self.fast_downward_path
         if not os.path.exists(fast_downward_path):
             raise FileNotFoundError(f"Fast Downward script not found at {fast_downward_path}. Please ensure it is in the correct directory.")
-        output = subprocess.run([
-            str(fast_downward_path),
-            '--alias',
-            'lama-first',
-            '--search-time-limit',
-            str(timeout),
-            dom_file,
-            prob_file,
-        ],
-                                capture_output=True, text=True, check=True)
-        plan_raw_output = output.stdout
+        if not optimal:
+            output = subprocess.run([
+                str(fast_downward_path),
+                '--alias',
+                'lama-first',
+                '--search-time-limit',
+                str(timeout),
+                dom_file,
+                prob_file,
+            ],
+                                    capture_output=True, text=True, check=True)
+        else:
+            try:
+                output = subprocess.run([
+                    str(fast_downward_path),
+                    '--alias',
+                    'seq-sat-fdss-2018',
+                    '--search-time-limit',
+                    str(timeout),
+                    '--overall-time-limit',
+                    str(timeout),
+                    dom_file,
+                    prob_file,
+                ],
+                                        capture_output=True, text=True, check=True)
+                plan_raw_output = output.stdout
+                
+            except subprocess.CalledProcessError as e:
+                stdout_text = e.stdout
+                stderr_text = e.stderr
+                plan_raw_output = stdout_text + stderr_text
+        
         # pick lines after Actual search time and before Plan length
+        plan_group = []
         plan_lines = []
         start_collecting = False 
         for line in plan_raw_output.splitlines():
@@ -179,22 +208,26 @@ class FastDownward():
                 continue
             if "Plan length" in line:
                 start_collecting = False
-                break
+                plan_group.append(plan_lines)
+                plan_lines = []
             if start_collecting:
                 plan_lines.append(line.strip())
             else:
                 continue
         
+        # sort the plan_group
+        plan_group.sort(key=lambda x: len(x))  # sort by length of plan
+        
         output = {'plans': []}
-        output['plans'].append({
-            'actions': plan_lines,
-            'cost': len(plan_lines)  # assuming cost is the length of the plan
-        })
+        for each_plan in plan_group:
+            output['plans'].append({
+                'actions': each_plan,
+                'cost': len(each_plan)  # assuming cost is the length of the plan
+            })
         if remove_files:
             os.remove(dom_file)
             os.remove(prob_file)
-        if time.time()-start_time > timeout:
-            raise RuntimeError("Planning took too long, timeout reached: {} seconds".format(timeout))
+            
 
         pddl_plan_lst = self._output_to_plan_list(output)
 
@@ -234,12 +267,12 @@ class FastDownward():
         
     def _parse_action(self, action_str):
         for action, action_id in ACTION_PARSING_DICT.items():
-            if action in action_str:
+            if action_str.startswith(action):
                 return action_id
         raise ValueError(f"Action string '{action_str}' does not match any known action.")
         
     def __call__(self, domain_file, problem_file, horizon=np.inf, timeout=30,
-                 return_files=False, parse_actions=False):
+                 return_files=False, parse_actions=False, optimal=False):
 
         dom_file = tempfile.NamedTemporaryFile(delete=False).name
         prob_file = tempfile.NamedTemporaryFile(delete=False).name
@@ -253,7 +286,7 @@ class FastDownward():
         
         pddl_plan = self.plan_from_pddl(
             dom_file, prob_file, horizon=horizon,
-            timeout=timeout, remove_files=(not return_files))
+            timeout=timeout, remove_files=(not return_files), optimal=optimal)
 
         plan = []
         
@@ -270,6 +303,7 @@ class FastDownward():
         if return_files:
             return plan, dom_file, prob_file
         return plan
+    
         
 RECIPE_DICT = {
     "tomato-salad-food" : "TomatoSalad",
@@ -291,6 +325,8 @@ if __name__ == "__main__":
     parser.add_argument("--num_blocks", type=int, default=2, help="Number of blocks in the map.")
     parser.add_argument("--num_recipes", type=int, default=2, help="Number of recipes required to complete.")
     parser.add_argument("--num_output", type=int, default=1, help="Number of problems instnaces to generate.")
+    parser.add_argument("--timeout", type=str, default='30', help="Timeout for planner")
+    parser.add_argument("--optimal", action='store_true', help="Use optimal planning (default: False).")
     
     args = parser.parse_args()
     
@@ -302,6 +338,8 @@ if __name__ == "__main__":
     num_blocks = args.num_blocks
     num_recipes = args.num_recipes
     num_output = args.num_output
+    timeout = args.timeout
+    optimal = args.optimal
     
     pbar = tqdm(total=num_output)
     
@@ -377,7 +415,7 @@ if __name__ == "__main__":
         domain_file = os.path.join(os.path.dirname(__file__), "overcooked.pddl")
         
         try:
-            plans = my_planner(domain_file, pddl_problem_file_path)
+            plans = my_planner(domain_file, pddl_problem_file_path, timeout=timeout, optimal=optimal)
             assert len(plans) > 0, "No plans found."
             # save the plans and the recipes_tasks into a json file 
             plan_info_dict = {
