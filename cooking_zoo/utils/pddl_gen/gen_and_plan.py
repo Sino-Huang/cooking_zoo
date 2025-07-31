@@ -182,7 +182,7 @@ class FastDownward():
                 output = subprocess.run([
                     str(fast_downward_path),
                     '--alias',
-                    'seq-sat-fdss-2018',
+                    'lama',
                     '--search-time-limit',
                     str(timeout),
                     '--overall-time-limit',
