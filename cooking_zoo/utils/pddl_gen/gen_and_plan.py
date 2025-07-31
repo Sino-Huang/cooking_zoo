@@ -177,6 +177,7 @@ class FastDownward():
                 prob_file,
             ],
                                     capture_output=True, text=True, check=True)
+            plan_raw_output = output.stdout
         else:
             try:
                 output = subprocess.run([
