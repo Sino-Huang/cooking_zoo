@@ -13,7 +13,7 @@
         carrot banana - smash-ingredient
         cutboard blender - appliance
 
-    ) ; 
+    ) 
 
    
     (:constants ;; need to be in front of the predicates
