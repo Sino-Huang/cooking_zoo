@@ -329,12 +329,11 @@ class CookingEnvironment(AECEnv):
             recipe_dones = any([recipe.completed() for recipe in self.recipe_graphs])
         dones = [recipe_dones or done for done in dones]
         if recipe_dones:
-            # Success ends the episode for every agent. Deactivate them as the time limit does, so that
-            # step(None) removes them; otherwise the parallel wrapper calls step(None) forever. Success on
-            # the last step is a termination, not a truncation.
+            # Success ends the episode for every agent, as the time limit does, so that step(None) removes
+            # them; otherwise the parallel wrapper calls step(None) forever. Success on the last step is a
+            # termination, not a truncation.
             self.termination_info = "Terminating because the recipe is complete"
-            self.world.active_agents = [False] * self.num_agents
-            self.world.status_changed = [agent in self.world.relevant_agents for agent in self.world.agents]
+            self._deactivate_agents()
             truncations = [False] * len(truncations)
         return dones, rewards, open_goals, infos, truncations
 
@@ -358,9 +357,7 @@ class CookingEnvironment(AECEnv):
         if self.t >= self.max_steps:
             self.termination_info = f"Terminating because {self.max_steps} timesteps passed"
             truncated = [True] * len(self.world.relevant_agents)
-            self.world.active_agents = [False] * self.num_agents
-            self.world.status_changed = [True if agent in self.world.relevant_agents else False
-                                         for agent in self.world.agents]
+            self._deactivate_agents()
         else:
             truncated = [False] * len(self.world.relevant_agents)
 
@@ -372,6 +369,11 @@ class CookingEnvironment(AECEnv):
             if self.world.status_changed[idx] and not self.world.active_agents[idx]:
                 truncated[idx - offset_idx] = True
         return truncated
+
+    def _deactivate_agents(self):
+        """End the episode for every agent: all inactive, the relevant ones flagged as changed."""
+        self.world.active_agents = [False] * self.num_agents
+        self.world.status_changed = [agent in self.world.relevant_agents for agent in self.world.agents]
 
     def get_feature_vector(self, agent):
         feature_vector = []
@@ -402,23 +404,23 @@ class CookingEnvironment(AECEnv):
     def render(self, **kwargs):
         if self.render_mode == "rgb_array":
             return self.render_rgb(self.tile_size)
-        if not self.graphic_pipeline:
-            self.graphic_pipeline = GraphicPipeline(self.world, self.agent_visualization, self.render_flag,
-                                                    pixel_per_tile=self.tile_size)
-            self.graphic_pipeline.initialize()
-        self.graphic_pipeline.world = self.world  # reset() builds a new world
+        self.graphic_pipeline = self._pipeline(self.graphic_pipeline, self.tile_size, self.render_flag)
         self.graphic_pipeline.render(self.render_flag)
 
     def render_rgb(self, tile_size):
         """The current state as an (H, W, 3) uint8 frame, tile_size pixels per tile, drawn off-screen."""
-        pipeline = self.rgb_pipelines.get(tile_size)
-        if pipeline is None:
-            pipeline = GraphicPipeline(self.world, self.agent_visualization, False, pixel_per_tile=tile_size)
-            pipeline.initialize()
-            self.rgb_pipelines[tile_size] = pipeline
-        pipeline.world = self.world
+        pipeline = self.rgb_pipelines[tile_size] = self._pipeline(self.rgb_pipelines.get(tile_size), tile_size, False)
         pipeline.render(False)
         return np.ascontiguousarray(pygame.surfarray.array3d(pipeline.screen).transpose(1, 0, 2))
+
+    def _pipeline(self, pipeline, tile_size, display):
+        """`pipeline`, or (None) a new GraphicPipeline at tile_size pixels per tile, on screen when display;
+        bound to the current world, since reset() builds a new one."""
+        if pipeline is None:
+            pipeline = GraphicPipeline(self.world, self.agent_visualization, display, pixel_per_tile=tile_size)
+            pipeline.initialize()
+        pipeline.world = self.world
+        return pipeline
 
     def screenshot(self, path="screenshot.png"):
         self.graphic_pipeline.save_image(path)
