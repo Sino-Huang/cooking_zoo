@@ -36,23 +36,22 @@ class GraphicPipeline:
     CONTAINER_SCALE = 0.7
     ICON_SCALE = 1/16
 
-    def __init__(self, world, agent_visualization, display=False):
+    def __init__(self, world, agent_visualization, display=False, pixel_per_tile=None):
         pygame.init()
         self.world = world
         self.display = display
         self.screen = None
         self.agent_visualization = agent_visualization
         self.graphics_dir = 'environment/graphics/assets/'
-        self.graphics_properties = GraphicsProperties(self.PIXEL_PER_TILE, self.HOLDING_SCALE, self.CONTAINER_SCALE,
-                                                      self.PIXEL_PER_TILE * self.world.width,
-                                                      self.PIXEL_PER_TILE * self.world.height,
-                                                      (self.PIXEL_PER_TILE, self.PIXEL_PER_TILE),
-                                                      (self.PIXEL_PER_TILE * self.HOLDING_SCALE,
-                                                       self.PIXEL_PER_TILE * self.HOLDING_SCALE),
-                                                      (self.PIXEL_PER_TILE * self.CONTAINER_SCALE,
-                                                       self.PIXEL_PER_TILE * self.CONTAINER_SCALE),
-                                                      (self.PIXEL_PER_TILE * self.CONTAINER_SCALE * self.HOLDING_SCALE,
-                                                       self.PIXEL_PER_TILE * self.CONTAINER_SCALE * self.HOLDING_SCALE))
+        ppt = pixel_per_tile or self.PIXEL_PER_TILE
+        self.graphics_properties = GraphicsProperties(ppt, self.HOLDING_SCALE, self.CONTAINER_SCALE,
+                                                      ppt * self.world.width,
+                                                      ppt * self.world.height,
+                                                      (ppt, ppt),
+                                                      (ppt * self.HOLDING_SCALE, ppt * self.HOLDING_SCALE),
+                                                      (ppt * self.CONTAINER_SCALE, ppt * self.CONTAINER_SCALE),
+                                                      (ppt * self.CONTAINER_SCALE * self.HOLDING_SCALE,
+                                                       ppt * self.CONTAINER_SCALE * self.HOLDING_SCALE))
         my_path = os.path.realpath(__file__)
         dir_name = os.path.dirname(my_path)
         path = pathlib.Path(dir_name)
@@ -68,7 +67,9 @@ class GraphicPipeline:
             self.screen = pygame.Surface((self.graphics_properties.width_pixel, self.graphics_properties.height_pixel))
         self.screen = self.screen
         pygame.display.set_caption('Cooking Zoo')
-        self.font = pygame.font.Font('freesansbold.ttf', 18)
+        # 18 pt at the default 80 px per tile, scaled with the tile size.
+        self.font = pygame.font.Font('freesansbold.ttf', max(1, round(18 * self.graphics_properties.pixel_per_tile
+                                                                      / self.PIXEL_PER_TILE)))
         return True
 
     def render(self, display):
@@ -174,7 +175,7 @@ class GraphicPipeline:
         self.screen.blit(image, location)
 
         if text:
-            text_surface_object = self.font.render()
+            text_surface_object = self.font.render(text, True, Color.BLACK)
             text_field = text_surface_object.get_rect()
             text_field.center = (location[0] + size[0] // 2, location[1] + size[1] // 2)
             self.screen.blit(text_surface_object, text_field)

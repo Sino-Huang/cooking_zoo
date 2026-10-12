@@ -1,0 +1,74 @@
+{
+  "LEVEL_LAYOUT": "-------\n-     -\n-     -\n-     -\n-     -\n-     -\n-------",
+  "STATIC_OBJECTS": [
+    {
+      "Cutboard": {
+        "COUNT": 1,
+        "X_POSITION": [
+          0
+        ],
+        "Y_POSITION": [
+          3
+        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [
+          3
+        ],
+        "Y_POSITION": [
+          6
+        ]
+      }
+    }
+  ],
+  "DYNAMIC_OBJECTS": [
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [
+          3
+        ],
+        "Y_POSITION": [
+          0
+        ]
+      }
+    },
+    {
+      "Cucumber": {
+        "COUNT": 1,
+        "X_POSITION": [
+          6
+        ],
+        "Y_POSITION": [
+          3
+        ]
+      }
+    },
+    {
+      "Onion": {
+        "COUNT": 1,
+        "X_POSITION": [
+          6
+        ],
+        "Y_POSITION": [
+          4
+        ]
+      }
+    }
+  ],
+  "AGENTS": [
+    {
+      "MAX_COUNT": 1,
+      "X_POSITION": [
+        3
+      ],
+      "Y_POSITION": [
+        3
+      ]
+    }
+  ],
+  "DYNAMIC_EXCLUDED_POSITIONS": []
+}

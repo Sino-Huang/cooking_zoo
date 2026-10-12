@@ -1,9 +1,9 @@
+import random
 from collections import defaultdict
 from cooking_zoo.cooking_world.world_objects import *
 from cooking_zoo.cooking_world.actions import *
 from cooking_zoo.cooking_world.cooking_action_util import action_scheme1, action_scheme2, action_scheme3
 from cooking_zoo.cooking_world.engine import load_level, parsing
-import numpy as np
 
 
 class CookingWorld:
@@ -21,7 +21,9 @@ class CookingWorld:
     COLORS = ['blue', 'magenta', 'yellow', 'green']
 
     def __init__(self, action_scheme_class=ActionScheme1, meta_file="", recipes=None, agent_respawn_rate=0.0,
-                 grace_period=20, agent_despawn_rate=0.0):
+                 grace_period=20, agent_despawn_rate=0.0, rng=None):
+        # Source of every random draw in the world (level placement, agent respawn/despawn).
+        self.rng = rng if rng is not None else random.Random()
         self.agents = []
         self.agent_store = []
         self.agent_spawn_locations = []
@@ -271,9 +273,9 @@ class CookingWorld:
             else:
                 # active = self.active_agents[i]
                 if self.active_agents.count(True) > 1 and self.active_agents[i] \
-                   and np.random.random() < self.agent_despawn_rate:
+                   and self.rng.random() < self.agent_despawn_rate:
                     self.despawn_agent(i)
-                elif not self.active_agents[i] and np.random.random() < self.agent_respawn_rate:
+                elif not self.active_agents[i] and self.rng.random() < self.agent_respawn_rate:
                     self.respawn_agent(i)
 
     def despawn_agent(self, index):
