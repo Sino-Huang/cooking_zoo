@@ -1,0 +1,96 @@
+{
+  "LEVEL_LAYOUT": "-------\n- - ---\n-   ---\n-   ---\n-     -\n- -----\n-------",
+  "STATIC_OBJECTS": [
+    {
+      "Cutboard": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          5        ]
+      }
+    },
+    {
+      "Blender": {
+        "COUNT": 1,
+        "X_POSITION": [          2        ],
+        "Y_POSITION": [          1        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          3        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          2        ]
+      }
+    }
+  ],
+  "DYNAMIC_OBJECTS": [
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          1        ]
+      }
+    },
+    {
+      "Tomato": {
+        "COUNT": 1,
+        "X_POSITION": [          1        ],
+        "Y_POSITION": [          0        ]
+      }
+    },
+    {
+      "Lettuce": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          3        ]
+      }
+    },
+    {
+      "Onion": {
+        "COUNT": 1,
+        "X_POSITION": [          6        ],
+        "Y_POSITION": [          4        ]
+      }
+    },
+    {
+      "Onion": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          5        ]
+      }
+    }
+  ],
+  "AGENTS": [
+    {
+      "MAX_COUNT": 1,
+      "X_POSITION": [        1      ],
+      "Y_POSITION": [        1      ]
+    }
+  ],
+  "DYNAMIC_EXCLUDED_POSITIONS": [
+    [      0,      0    ],
+    [      2,      0    ],
+    [      4,      0    ],
+    [      5,      0    ],
+    [      6,      0    ],
+    [      5,      1    ],
+    [      6,      1    ],
+    [      5,      2    ],
+    [      6,      2    ],
+    [      6,      3    ],
+    [      6,      5    ],
+    [      0,      6    ],
+    [      2,      6    ],
+    [      3,      6    ],
+    [      4,      6    ],
+    [      5,      6    ],
+    [      6,      6    ]
+  ]
+}

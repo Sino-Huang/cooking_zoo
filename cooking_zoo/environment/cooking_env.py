@@ -1,5 +1,6 @@
 # Other core modules
 import copy
+import random
 
 from cooking_zoo.cooking_world.cooking_world import CookingWorld
 from cooking_zoo.cooking_world.world_objects import *
@@ -7,12 +8,12 @@ from cooking_zoo.cooking_world.actions import *
 from cooking_zoo.cooking_book.recipe_drawer import RECIPES, NUM_GOALS, RECIPE_STORE, DEFAULT_NUM_GOALS
 
 import numpy as np
+import pygame
 from collections import namedtuple, defaultdict
 from pettingzoo import AECEnv
 from pettingzoo.utils import AgentSelector
 from pettingzoo.utils import wrappers
 from pettingzoo.utils.conversions import parallel_wrapper_fn
-from gymnasium.utils import seeding
 from cooking_zoo.environment.game.graphic_pipeline import GraphicPipeline
 import gymnasium as gym
 
@@ -25,20 +26,26 @@ FPS = 20
 
 def env(level, meta_file, num_agents, max_steps, recipes, agent_visualization=None, obs_spaces=None,
         end_condition_all_dishes=False, action_scheme="scheme1", render=False, reward_scheme=None,
-        agent_respawn_rate=0.0, grace_period=20, agent_despawn_rate=0.0):
+        agent_respawn_rate=0.0, grace_period=20, agent_despawn_rate=0.0, render_mode=None, tile_size=80):
     """
     The env function wraps the environment in 3 wrappers by default. These
     wrappers contain logic that is common to many pettingzoo environments.
     We recommend you use at least the OrderEnforcingWrapper on your own environment
     to provide sane error messages. You can find full documentation for these methods
     elsewhere in the developer documentation.
+
+    render_mode=None keeps the legacy "human" rendering (a window if render=True, else a hidden surface;
+    render() returns nothing). render_mode="rgb_array" makes render() return an (H, W, 3) uint8 frame
+    drawn at tile_size pixels per tile.
     """
     env_init = CookingEnvironment(level, meta_file, num_agents, max_steps, recipes, agent_visualization,
                                   obs_spaces, end_condition_all_dishes=end_condition_all_dishes,
                                   action_scheme=action_scheme, render=render, reward_scheme=reward_scheme,
                                   agent_respawn_rate=agent_respawn_rate, grace_period=grace_period,
-                                  agent_despawn_rate=agent_despawn_rate)
-    env_init = wrappers.CaptureStdoutWrapper(env_init)
+                                  agent_despawn_rate=agent_despawn_rate, render_mode=render_mode,
+                                  tile_size=tile_size)
+    if env_init.render_mode == "human":
+        env_init = wrappers.CaptureStdoutWrapper(env_init)
     env_init = wrappers.OrderEnforcingWrapper(env_init)
     return env_init
 
@@ -61,8 +68,14 @@ class CookingEnvironment(AECEnv):
 
     def __init__(self, level, meta_file, num_agents, max_steps, recipes, agent_visualization=None, obs_spaces=None,
                  end_condition_all_dishes=False, allowed_objects=None, action_scheme="scheme1", render=False,
-                 reward_scheme=None, agent_respawn_rate=0.0, grace_period=20, agent_despawn_rate=0.0):
+                 reward_scheme=None, agent_respawn_rate=0.0, grace_period=20, agent_despawn_rate=0.0,
+                 render_mode=None, tile_size=80):
         super().__init__()
+        assert render_mode in (None, "human", "rgb_array"), f"Unsupported render mode {render_mode}"
+        # Every stochastic component of the engine (level placement, agent respawn/despawn) draws from this
+        # per-environment generator, never from the global `random`/`np.random`. reset(seed=s) reseeds it;
+        # an unseeded reset continues its stream.
+        self.rng = random.Random()
 
         obs_spaces = obs_spaces or ["feature_vector"]
         self.allowed_obs_spaces = ["symbolic", "full", "feature_vector"]
@@ -89,7 +102,7 @@ class CookingEnvironment(AECEnv):
         self.set_filename()
         self.meta_file = meta_file
         self.world = CookingWorld(self.action_scheme_class, meta_file, agent_respawn_rate=agent_respawn_rate,
-                                  grace_period=grace_period, agent_despawn_rate=agent_despawn_rate)
+                                  grace_period=grace_period, agent_despawn_rate=agent_despawn_rate, rng=self.rng)
         assert self.num_agents <= self.world.meta_object_information["Agent"], \
             "Too many agents for this level"
         self.recipe_names = recipes
@@ -148,8 +161,9 @@ class CookingEnvironment(AECEnv):
         self.accumulated_actions = []
         self.current_tensor_observation = np.zeros((self.world.width, self.world.height,
                                                     self.graph_representation_length))
-        self.render_mode = "human"
-        self.np_random = None
+        self.render_mode = render_mode or "human"
+        self.tile_size = tile_size
+        self.rgb_pipelines = {}  # tile size -> hidden-surface GraphicPipeline for render_rgb
         self.loaded_recipes = []
         if not RECIPE_STORE:
             self.loaded_recipes = list(RECIPES.keys())
@@ -173,9 +187,11 @@ class CookingEnvironment(AECEnv):
         return self.action_spaces[agent]
 
     def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
+        self.rng.seed(seed)
 
     def reset(self, seed=None, return_info=False, options=None):
+        if seed is not None:
+            self.rng.seed(seed)
         options = options or {"full_reset": True}
         # self.world = CookingWorld(self.action_scheme_class)
         self.t = 0
@@ -191,7 +207,7 @@ class CookingEnvironment(AECEnv):
         if options["full_reset"]:
             self.world = CookingWorld(self.action_scheme_class, self.meta_file,
                                       agent_respawn_rate=self.agent_respawn_rate, grace_period=self.grace_period,
-                                      agent_despawn_rate=self.agent_despawn_rate)
+                                      agent_despawn_rate=self.agent_despawn_rate, rng=self.rng)
         self.world.load_level(level=self.level, num_agents=self.num_agents)
 
         for recipe in self.recipe_graphs:
@@ -312,6 +328,14 @@ class CookingEnvironment(AECEnv):
         else:
             recipe_dones = any([recipe.completed() for recipe in self.recipe_graphs])
         dones = [recipe_dones or done for done in dones]
+        if recipe_dones:
+            # Success ends the episode for every agent. Deactivate them as the time limit does, so that
+            # step(None) removes them; otherwise the parallel wrapper calls step(None) forever. Success on
+            # the last step is a termination, not a truncation.
+            self.termination_info = "Terminating because the recipe is complete"
+            self.world.active_agents = [False] * self.num_agents
+            self.world.status_changed = [agent in self.world.relevant_agents for agent in self.world.agents]
+            truncations = [False] * len(truncations)
         return dones, rewards, open_goals, infos, truncations
 
     def compute_infos(self, active_agents_start, actions):
@@ -376,10 +400,25 @@ class CookingEnvironment(AECEnv):
         return [agent.name for agent in self.world.agents]
 
     def render(self, **kwargs):
+        if self.render_mode == "rgb_array":
+            return self.render_rgb(self.tile_size)
         if not self.graphic_pipeline:
-            self.graphic_pipeline = GraphicPipeline(self.world, self.agent_visualization, self.render_flag)
+            self.graphic_pipeline = GraphicPipeline(self.world, self.agent_visualization, self.render_flag,
+                                                    pixel_per_tile=self.tile_size)
             self.graphic_pipeline.initialize()
+        self.graphic_pipeline.world = self.world  # reset() builds a new world
         self.graphic_pipeline.render(self.render_flag)
+
+    def render_rgb(self, tile_size):
+        """The current state as an (H, W, 3) uint8 frame, tile_size pixels per tile, drawn off-screen."""
+        pipeline = self.rgb_pipelines.get(tile_size)
+        if pipeline is None:
+            pipeline = GraphicPipeline(self.world, self.agent_visualization, False, pixel_per_tile=tile_size)
+            pipeline.initialize()
+            self.rgb_pipelines[tile_size] = pipeline
+        pipeline.world = self.world
+        pipeline.render(False)
+        return np.ascontiguousarray(pygame.surfarray.array3d(pipeline.screen).transpose(1, 0, 2))
 
     def screenshot(self, path="screenshot.png"):
         self.graphic_pipeline.save_image(path)

@@ -1,0 +1,86 @@
+{
+  "LEVEL_LAYOUT": "-------\n-------\n-   ---\n-    --\n-    --\n-   ---\n-------",
+  "STATIC_OBJECTS": [
+    {
+      "Cutboard": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          5        ]
+      }
+    },
+    {
+      "Blender": {
+        "COUNT": 1,
+        "X_POSITION": [          2        ],
+        "Y_POSITION": [          1        ]
+      }
+    },
+    {
+      "Deliversquare": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          3        ]
+      }
+    }
+  ],
+  "DYNAMIC_OBJECTS": [
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [          0        ],
+        "Y_POSITION": [          4        ]
+      }
+    },
+    {
+      "Plate": {
+        "COUNT": 1,
+        "X_POSITION": [          3        ],
+        "Y_POSITION": [          1        ]
+      }
+    },
+    {
+      "Apple": {
+        "COUNT": 1,
+        "X_POSITION": [          4        ],
+        "Y_POSITION": [          5        ]
+      }
+    },
+    {
+      "Watermelon": {
+        "COUNT": 1,
+        "X_POSITION": [          1        ],
+        "Y_POSITION": [          1        ]
+      }
+    }
+  ],
+  "AGENTS": [
+    {
+      "MAX_COUNT": 1,
+      "X_POSITION": [        4      ],
+      "Y_POSITION": [        3      ]
+    }
+  ],
+  "DYNAMIC_EXCLUDED_POSITIONS": [
+    [      0,      0    ],
+    [      1,      0    ],
+    [      2,      0    ],
+    [      3,      0    ],
+    [      4,      0    ],
+    [      5,      0    ],
+    [      6,      0    ],
+    [      0,      1    ],
+    [      4,      1    ],
+    [      5,      1    ],
+    [      6,      1    ],
+    [      5,      2    ],
+    [      6,      2    ],
+    [      6,      3    ],
+    [      6,      4    ],
+    [      5,      5    ],
+    [      6,      5    ],
+    [      0,      6    ],
+    [      4,      6    ],
+    [      5,      6    ],
+    [      6,      6    ]
+  ]
+}

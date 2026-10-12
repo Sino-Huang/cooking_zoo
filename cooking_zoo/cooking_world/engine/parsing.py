@@ -1,4 +1,3 @@
-import random
 from cooking_zoo.cooking_world.world_objects import *
 
 
@@ -27,12 +26,12 @@ def parse_static_objects(world, level_object):
             while True:
                 try:
                     optional = static_object[name]["OPTIONAL"]
-                    if optional <= random.random():
+                    if optional <= world.rng.random():
                         break
                 except KeyError:
                     pass
-                x = random.sample(static_object[name]["X_POSITION"], 1)[0]
-                y = random.sample(static_object[name]["Y_POSITION"], 1)[0]
+                x = world.rng.sample(static_object[name]["X_POSITION"], 1)[0]
+                y = world.rng.sample(static_object[name]["Y_POSITION"], 1)[0]
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     raise ValueError(f"Position {x} {y} of object {name} is out of bounds set by the level layout!")
                 static_objects_loc = world.get_objects_at((x, y), StaticObject)
@@ -86,13 +85,13 @@ def parse_dynamic_objects(world, level_object):
             while True:
                 try:
                     optional = dynamic_object[name]["OPTIONAL"]
-                    if optional <= random.random():
+                    if optional <= world.rng.random():
                         break
                 except KeyError:
                     pass
 
-                x = random.sample(dynamic_object[name]["X_POSITION"], 1)[0]
-                y = random.sample(dynamic_object[name]["Y_POSITION"], 1)[0]
+                x = world.rng.sample(dynamic_object[name]["X_POSITION"], 1)[0]
+                y = world.rng.sample(dynamic_object[name]["Y_POSITION"], 1)[0]
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     raise ValueError(f"Position {x} {y} of object {name} is out of bounds set by the level layout!")
                 static_objects_loc = world.get_objects_at((x, y), Counter)
@@ -125,8 +124,8 @@ def parse_agents(world, level_object, num_agents):
                 return
             time_out = 0
             while True:
-                x = random.sample(agent_object["X_POSITION"], 1)[0]
-                y = random.sample(agent_object["Y_POSITION"], 1)[0]
+                x = world.rng.sample(agent_object["X_POSITION"], 1)[0]
+                y = world.rng.sample(agent_object["Y_POSITION"], 1)[0]
                 if x < 0 or y < 0 or x > world.width or y > world.height:
                     raise ValueError(f"Position {x} {y} of agent is out of bounds set by the level layout!")
                 static_objects_loc = world.get_objects_at((x, y), Floor)
@@ -154,8 +153,8 @@ def parse_agents(world, level_object, num_agents):
 def generate_location(world, x_positions, y_positions):
     time_out = 0
     while True:
-        x = random.sample(x_positions, 1)[0]
-        y = random.sample(y_positions, 1)[0]
+        x = world.rng.sample(x_positions, 1)[0]
+        y = world.rng.sample(y_positions, 1)[0]
         if x < 0 or y < 0 or x > world.width or y > world.height:
             raise ValueError(f"Position {x} {y} is out of bounds set by the level layout!")
         static_objects_loc = world.get_objects_at((x, y), Floor)

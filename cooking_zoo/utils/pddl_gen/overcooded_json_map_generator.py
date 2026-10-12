@@ -4,8 +4,10 @@ benchmark described in the domain file you supplied.
 Key design choices
 ------------------
 *  **Determinism** – every call with identical arguments returns byte‑for‑byte
-   identical JSON.  We achieve this by seeding Python's std‑lib `random`
-   with *map_id*.
+   identical JSON.  We achieve this by drawing every random choice from a
+   `random.Random(map_id)` owned by the generator (the global `random` is not
+   touched), and by capping maze carving at a fixed number of random-walk steps
+   (MAX_CARVE_STEPS) rather than at a wall-clock time.
 *  **Layout** – a simple rectilinear “pillar” maze: the border and every
    third column are counters (`'-'`).  Interior cells are walkable floor
    (`' '`).
@@ -34,10 +36,8 @@ import random
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from time import time
 from typing import Dict, List, Sequence, Tuple
 import os
-from tqdm.auto import tqdm
 from copy import deepcopy
 
 Coordinate = Tuple[int, int]       # (x, y)
@@ -92,6 +92,7 @@ class PlacementPool:
     counters: List[Coordinate] = field(default_factory=list)
     floor: List[Coordinate] = field(default_factory=list)
     excluded: List[Coordinate] = field(default_factory=list)
+    rng: random.Random = field(default_factory=random.Random)
 
     def take(self, pool_name: str) -> Coordinate:
         """Pop one coordinate from the requested pool."""
@@ -100,7 +101,7 @@ class PlacementPool:
         assert pool is not None, f"Unknown pool: {pool_name}"
         if not pool:
             raise RuntimeError(f"No free {pool_name} tiles left to place object.")
-        return pool.pop(random.randrange(len(pool)))
+        return pool.pop(self.rng.randrange(len(pool)))
 
 # ---------------------------------------------------------------------------
 
@@ -110,6 +111,8 @@ class PlacementPool:
 
 class OvercookedJSONMapGenerator:
     """Generate deterministic Overcooked layout JSON."""
+
+    MAX_CARVE_STEPS = 100_000  # random-walk steps allowed for maze carving
 
     def __init__(
         self,
@@ -133,10 +136,10 @@ class OvercookedJSONMapGenerator:
         self.num_block = num_block
         self.goal_recipes = list(goal_recipes)
         self.map_id = map_id
-        random.seed(map_id)  # make everything that follows deterministic
+        self.rng = random.Random(map_id)  # every random draw below comes from here
 
         self.grid = [[" " for _ in range(self.W)] for _ in range(self.H)]
-        self.pool = PlacementPool()
+        self.pool = PlacementPool(rng=self.rng)
         self.static_objects: Dict[str, List[Coordinate]] = defaultdict(list)
         self.dynamic_objects: Dict[str, List[Coordinate]] = defaultdict(list)
         self.agents: List[List[int]] = []  # each element is [x, y]
@@ -171,21 +174,20 @@ class OvercookedJSONMapGenerator:
         self.grid = [[self.WALL] * self.W for _ in range(self.H)]
         # total number of interior cells (excluding the border)
         total_cells = (self.W - 2) * (self.H - 2)
-        threshold = random.uniform(0.9, 1.5)  # random threshold for floor/wall ratio
+        threshold = self.rng.uniform(0.9, 1.5)  # random threshold for floor/wall ratio
         # pick a random starting position *inside* the border
-        x = random.randrange(1, self.W - 1)
-        y = random.randrange(1, self.H - 1)
+        x = self.rng.randrange(1, self.W - 1)
+        y = self.rng.randrange(1, self.H - 1)
         self.grid[y][x] = self.FLOOR
 
         floor_count = 1
         wall_count = total_cells - 1
 
-        # random‐walk until we've carved out enough floors
-        pbar = tqdm(desc="Creating maze", total=30, leave=False) # only allow 3.0 seconds for maze carving
-        start_time = time()
-        cur_time = time()
-        while floor_count / wall_count < threshold and cur_time - start_time < 3.0:
-            dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0)])
+        # random‐walk until we've carved out enough floors (at most MAX_CARVE_STEPS steps)
+        steps = 0
+        while floor_count / wall_count < threshold and steps < self.MAX_CARVE_STEPS:
+            steps += 1
+            dx, dy = self.rng.choice([(0,1),(0,-1),(1,0),(-1,0)])
             nx, ny = x + dx, y + dy
             # skip moves that hit the border
             if not (1 <= nx < self.W - 1 and 1 <= ny < self.H - 1):
@@ -196,15 +198,10 @@ class OvercookedJSONMapGenerator:
                 self.grid[y][x] = self.FLOOR
                 floor_count += 1
                 wall_count  -= 1
-            cur_time_t = time()
-            interm_time = cur_time_t - cur_time
-            cur_time = cur_time_t
-            pbar.update(int(interm_time * 10))
-            
+
         # now add loops
         self._add_loops()
-            
-        pbar.close()
+
         # print(f"Carved {floor_count} floors, {wall_count} walls.")
         # print(f"floor/wall ratio: {floor_count / wall_count:.2f}")
         # re-enforce the outer border as walls
@@ -236,7 +233,7 @@ class OvercookedJSONMapGenerator:
 
         k = max(1, int(self.loop_ratio * len(potential)))
         if len(potential) > 1:
-            for x, y in random.sample(potential, k):
+            for x, y in self.rng.sample(potential, k):
                 self.grid[y][x] = self.FLOOR
             
     def display_grid(self):
@@ -295,8 +292,8 @@ class OvercookedJSONMapGenerator:
             if (x, y) in self.pool.counters:
                 self.pool.counters.remove((x, y))
         
-        random.shuffle(self.pool.counters)
-        random.shuffle(self.pool.floor)
+        self.rng.shuffle(self.pool.counters)
+        self.rng.shuffle(self.pool.floor)
 
     # ----------------------- object placement helpers --------------------- #
     def _place_static_objects(self):
@@ -305,7 +302,7 @@ class OvercookedJSONMapGenerator:
         self._add_static("Blender", count=1, on_counter=True)
 
         # Deliver squares (randomly pick from len(goal_recipes) to + 2)
-        num_ds = max(1, len(self.goal_recipes) + random.randint(0, 2))
+        num_ds = max(1, len(self.goal_recipes) + self.rng.randint(0, 2))
         self._add_static("Deliversquare", num_ds, on_counter=True)
 
         # Switches & blocks on floor
@@ -315,7 +312,7 @@ class OvercookedJSONMapGenerator:
     def _place_dynamic_objects(self):
         # Plates
         min_plate = len(self.goal_recipes)
-        num_plate = min_plate + random.randint(0, 2) 
+        num_plate = min_plate + self.rng.randint(0, 2) 
         self._add_dynamic("Plate", num_plate, on_counter=True)
 
         # Ingredients (every recipe completable + one spare per required ingredient)
@@ -326,7 +323,7 @@ class OvercookedJSONMapGenerator:
 
         # add a spare copy of each required ingredient
         for ing in list(need_counts):
-            need_counts[ing] += random.randint(0, 1) # add 0 or 1 spare
+            need_counts[ing] += self.rng.randint(0, 1) # add 0 or 1 spare
 
         for ing, cnt in need_counts.items():
             self._add_dynamic(ing, cnt, on_counter=True)

@@ -190,6 +190,8 @@ def generate_overcooked_pddl(level: Dict,
     type_type_dict = {
         'lettuce': 'lettuce-type',
         'tomato': 'tomato-type',
+        'onion': 'onion-type',
+        'cucumber': 'cucumber-type',
         'banana': 'banana-type',
         'apple': 'apple-type',
         'watermelon': 'watermelon-type',

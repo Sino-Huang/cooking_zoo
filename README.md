@@ -55,12 +55,14 @@ You can use this bibtex if you would like to cite the original paper this work i
 ## Installation
 
 ```
-git clone https://github.com/DavidRother/cooking_zoo.git
+git clone https://github.com/Sino-Huang/cooking_zoo.git
 cd cooking_zoo
 pip3 install -e .
 ```
 
-The environment is compatible with python 3.7 and higher.
+The environment needs Python 3.10 or higher. It uses `pygame-ce` (the maintained pygame fork; same `pygame`
+module). The generation scripts `gen_and_plan.py` and `single_agent_gameplay_test.py` also need
+`pip3 install -e .[scripts]` (tqdm, termcolor). Tests: `python -m pytest tests`.
 
 ## Usage 
 
@@ -114,6 +116,26 @@ To get a playable demo in a single agent environment view the demo_gameplay.py f
 and for a playable multi-agent demo, where another agent is controlled by a random movement AI view 
 the demo_multiplayer_gameplay.py file.
 
+### Seeding, termination and pixels
+
+- `reset(seed=s)` seeds a per-environment `random.Random` that every stochastic part of the engine draws from
+  (random object and agent placement from candidate positions, OPTIONAL objects, agent respawn/despawn); the
+  global `random`/`np.random` are not used. The same seed gives the same layout; an unseeded reset continues
+  the environment's stream.
+- An episode ends with `terminated=True` on the step that completes the recipe (all recipes with
+  `end_condition_all_dishes=True`), and with `truncated=True` on step `max_steps`. Completion on the last step
+  is a termination.
+- `render_mode="rgb_array"` (with `tile_size`, pixels per tile, default 80) makes `render()` return an
+  (H, W, 3) uint8 frame of the current state drawn off-screen; `CookingEnvironment.render_rgb(tile_size)` draws
+  one at any tile size. The default `render_mode=None` keeps the window/hidden-surface rendering.
+
+```python
+env = gym.make("cookingEnv-v1", level=level, meta_file="example", max_steps=400, recipes=["TomatoSalad"],
+               obs_spaces=["symbolic"], action_scheme="scheme3", render_mode="rgb_array", tile_size=16)
+obs, info = env.reset(seed=0)
+frame = env.render()  # (16 * height, 16 * width, 3) uint8
+```
+
 ## Observation Spaces
 
 # Feature Vector
@@ -149,6 +171,24 @@ To add a new recipe add the node call the register_recipe function in the recipe
 If you want to add to the default recipe book directly add the recipe in the files.
 
 
+
+## Level pools
+
+`cooking_zoo/pools/<name>/` holds versioned, hashed level pools: `pool.json` (generator settings, pool seed,
+planner, and per level the map id, recipe, level/problem files with SHA-256, the PDDL plan and its scheme3
+actions), `levels/*.json` and `problems/*.pddl`. Load one with `cooking_zoo.pools.load_pool()`, verify its
+hashes with `verify_pool()`, and play a level with `make_env(entry)`.
+
+`pool50_7x7_v1`: 50 generated 7×7 levels without switches or blocks, one recipe each, 10 each of TomatoSalad,
+TomatoLettuceSalad, TomatoLettuceOnionSalad, CarrotBanana and AppleWatermelon. Every plan completes its recipe
+in the engine within 400 steps (`tests/test_pool.py`).
+
+Build a pool, or check that a rebuild reproduces the committed files byte for byte (Fast Downward
+`release-26.6.0`, built with `python3 build.py` in its checkout):
+
+```
+python -m cooking_zoo.utils.pddl_gen.build_pool --fast-downward <downward>/fast-downward.py [--check]
+```
 
 ## Generating Problem Instances 
 
