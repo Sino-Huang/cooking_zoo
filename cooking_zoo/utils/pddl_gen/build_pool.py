@@ -46,13 +46,14 @@ POOL_SPECS = {
 }
 
 
-def plan_problem(fast_downward, problem, time_limit, work_dir):
-    """The plan Fast Downward finds for `problem`, as a list of PDDL steps; None if it finds none."""
+def plan_problem(fast_downward, problem, planner, work_dir):
+    """The plan Fast Downward finds for `problem` with the spec's `planner` settings (alias, search time
+    limit), as a list of PDDL steps; None if it finds none."""
     plan_file = Path(work_dir) / "sas_plan"
     plan_file.unlink(missing_ok=True)
     result = subprocess.run(
-        [sys.executable, str(fast_downward), "--plan-file", str(plan_file), "--alias", "lama-first",
-         "--search-time-limit", str(time_limit), str(DOMAIN_FILE), str(problem)],
+        [sys.executable, str(fast_downward), "--plan-file", str(plan_file), "--alias", planner["alias"],
+         "--search-time-limit", str(planner["search_time_limit_s"]), str(DOMAIN_FILE), str(problem)],
         cwd=work_dir, capture_output=True, text=True)
     if result.returncode != 0 or not plan_file.is_file():
         return None
@@ -105,7 +106,7 @@ def build(name, fast_downward, out_dir):
                 generator.output_level_dict(level, level_file)
                 problem_file = out_dir / "problems" / f"{stem}.pddl"
                 problem_file.write_text(generate_overcooked_pddl(level, problem_name=stem, goal_clauses=[recipe]))
-                plan = plan_problem(fast_downward, problem_file, spec["planner"]["search_time_limit_s"], work_dir)
+                plan = plan_problem(fast_downward, problem_file, spec["planner"], work_dir)
                 if plan is None:
                     level_file.unlink()
                     problem_file.unlink()
