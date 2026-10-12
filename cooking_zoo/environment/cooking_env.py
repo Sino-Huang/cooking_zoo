@@ -403,7 +403,8 @@ class CookingEnvironment(AECEnv):
         if self.render_mode == "rgb_array":
             return self.render_rgb(self.tile_size)
         if not self.graphic_pipeline:
-            self.graphic_pipeline = GraphicPipeline(self.world, self.agent_visualization, self.render_flag)
+            self.graphic_pipeline = GraphicPipeline(self.world, self.agent_visualization, self.render_flag,
+                                                    pixel_per_tile=self.tile_size)
             self.graphic_pipeline.initialize()
         self.graphic_pipeline.world = self.world  # reset() builds a new world
         self.graphic_pipeline.render(self.render_flag)
